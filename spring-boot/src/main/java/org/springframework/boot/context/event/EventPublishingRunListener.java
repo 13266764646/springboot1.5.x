@@ -52,6 +52,7 @@ public class EventPublishingRunListener implements SpringApplicationRunListener,
 	public EventPublishingRunListener(SpringApplication application, String[] args) {
 		this.application = application;
 		this.args = args;
+		//spring事件机制通用的事件发布类
 		this.initialMulticaster = new SimpleApplicationEventMulticaster();
 		for (ApplicationListener<?> listener : application.getListeners()) {
 			this.initialMulticaster.addApplicationListener(listener);
@@ -66,6 +67,7 @@ public class EventPublishingRunListener implements SpringApplicationRunListener,
 	@Override
 	@SuppressWarnings("deprecation")
 	public void starting() {
+		//关键代码，这里是创建application启动事件ApplicatonStartingEvent
 		this.initialMulticaster.multicastEvent(new ApplicationStartedEvent(this.application, this.args));
 	}
 

@@ -47,10 +47,11 @@ import org.springframework.core.annotation.AliasFor;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-@SpringBootConfiguration
-@EnableAutoConfiguration
+@SpringBootConfiguration//允许在使用该注解的地方使用@Bean注入
+@EnableAutoConfiguration//允许自动配置
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
 		@Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class) })
+//指定要扫描的那些类。springBoot默认会扫描Application类所在包及子包的类的就是因为这个。
 public @interface SpringBootApplication {
 
 	/**

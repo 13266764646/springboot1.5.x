@@ -131,15 +131,19 @@ class BeanDefinitionLoader {
 
 	private int load(Object source) {
 		Assert.notNull(source, "Source must not be null");
+		//如果是class类型，启动注解类型
 		if (source instanceof Class<?>) {
 			return load((Class<?>) source);
 		}
+		//如果是resource类型，启动xml解析
 		if (source instanceof Resource) {
 			return load((Resource) source);
 		}
+		//如果是package类型，启动扫描包，例如：@ComponentScan
 		if (source instanceof Package) {
 			return load((Package) source);
 		}
+		//如果是字符创类型，直接加载
 		if (source instanceof CharSequence) {
 			return load((CharSequence) source);
 		}
@@ -281,6 +285,8 @@ class BeanDefinitionLoader {
 	private boolean isComponent(Class<?> type) {
 		// This has to be a bit of a guess. The only way to be sure that this type is
 		// eligible is to make a bean definition out of it and try to instantiate it.
+		//上述方法判断启动类中是否包含@component注解，可我们的启动类并没有该注解。接续跟进会发现，AnnotationUtils判断是否
+		//包含该注解通过递归实现，注解上的注解若包含指定类型也是可以的。
 		if (AnnotationUtils.findAnnotation(type, Component.class) != null) {
 			return true;
 		}

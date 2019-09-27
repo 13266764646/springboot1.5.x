@@ -223,6 +223,7 @@ public class SpringApplication {
 	 * @see #SpringApplication(ResourceLoader, Object...)
 	 */
 	public SpringApplication(Object... sources) {
+		//初始化
 		initialize(sources);
 	}
 
@@ -246,8 +247,11 @@ public class SpringApplication {
 		if (sources != null && sources.length > 0) {
 			this.sources.addAll(Arrays.asList(sources));
 		}
+		//设置servlet环境
 		this.webEnvironment = deduceWebEnvironment();
+		//获取ApplicaitonContextInitializer，也是在这里开始首次加载spring.factories文件
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+		//获取监听器，这里是第二次加载spring.factories文件
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
 		this.mainApplicationClass = deduceMainApplicationClass();
 	}
@@ -282,22 +286,44 @@ public class SpringApplication {
 	 * @param args the application arguments (usually passed from a Java main method)
 	 * @return a running {@link ApplicationContext}
 	 */
+	//至此，springboot就已经启动完毕。概述下主要的启动过程就是
+	//
+	//初始化环境
+	//初始化默认配置
+	//初始化各类监听器、事件
+	//创建上下文
+	//在上下文中添加默认的bean
+	//扫描文件、注解等各种类型的bean添加在上下文中
+	//实例化各个bean
+	//启动完毕
 	public ConfigurableApplicationContext run(String... args) {
+		//时间监控
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 		ConfigurableApplicationContext context = null;
 		FailureAnalyzers analyzers = null;
+		//java.awt.headless是J2SE的一种模式用于在缺少显示屏、键盘或者鼠标时的系统配置，很多监控工具
+		//如jconsole需要将该值设置为true，系统变量默认为true
 		configureHeadlessProperty();
+		//获取spring.factories中的监听器变量，args为指定的参数数组，默认为当前类SpringApplication
+		//第一步：获取并启动监听器
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		listeners.starting();
 		try {
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+			//第二步：构造容器环境
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
+			//打印banner
 			Banner printedBanner = printBanner(environment);
+			//第三步：创建容器
 			context = createApplicationContext();
+			//第四步：实例化springBootExceptionReport.class，用来支持报告关于启动的错误
 			analyzers = new FailureAnalyzers(context);
+			//第五步： 准备容器
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
+			//第六步：刷新容器
 			refreshContext(context);
+			//第七步：刷新容器后的扩展接口
 			afterRefresh(context, applicationArguments);
 			listeners.finished(context, null);
 			stopWatch.stop();
@@ -315,8 +341,11 @@ public class SpringApplication {
 	private ConfigurableEnvironment prepareEnvironment(SpringApplicationRunListeners listeners,
 			ApplicationArguments applicationArguments) {
 		// Create and configure the environment
+		//获取对应的ConfigurableEnvironment,1.初始化environment
 		ConfigurableEnvironment environment = getOrCreateEnvironment();
+		//配置2.加载默认配置
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
+		//发布环境已准备事件，这是第二次发布事件 3.通过环境监听器，加载项目中的配置文件
 		listeners.environmentPrepared(environment);
 		if (!this.webEnvironment) {
 			environment = new EnvironmentConverter(getClassLoader())
@@ -327,25 +356,35 @@ public class SpringApplication {
 
 	private void prepareContext(ConfigurableApplicationContext context, ConfigurableEnvironment environment,
 			SpringApplicationRunListeners listeners, ApplicationArguments applicationArguments, Banner printedBanner) {
+		//设置容器环境，包含各种变量
 		context.setEnvironment(environment);
+		//执行容器后置处理
 		postProcessApplicationContext(context);
+		//执行容器中的ApplicationContextInitializer(包含spring.factories和自定义的实例)
 		applyInitializers(context);
+		//发送容器已经准备好的事情，通知各监听器
 		listeners.contextPrepared(context);
+		//打印log
 		if (this.logStartupInfo) {
 			logStartupInfo(context.getParent() == null);
 			logStartupProfileInfo(context);
 		}
 
 		// Add boot specific singleton beans
+		//注册启动参数bean，这里将容器制定的参数封装成bean，注入容器
 		context.getBeanFactory().registerSingleton("springApplicationArguments", applicationArguments);
+		//设置banner
 		if (printedBanner != null) {
 			context.getBeanFactory().registerSingleton("springBootBanner", printedBanner);
 		}
 
 		// Load the sources
+		//获取我们的启动类制定的参数，可以是多个
 		Set<Object> sources = getSources();
 		Assert.notEmpty(sources, "Sources must not be empty");
+		//加载我们的启动类，将启动类注入容器
 		load(context, sources.toArray(new Object[sources.size()]));
+		//发布容器已加载事件，主还是正对一些日志等监听器的响应处理
 		listeners.contextLoaded(context);
 	}
 
@@ -392,9 +431,11 @@ public class SpringApplication {
 		List<T> instances = new ArrayList<T>(names.size());
 		for (String name : names) {
 			try {
+				////装载class文件到内存
 				Class<?> instanceClass = ClassUtils.forName(name, classLoader);
 				Assert.isAssignable(type, instanceClass);
 				Constructor<?> constructor = instanceClass.getDeclaredConstructor(parameterTypes);
+				//主要通过反射创建实例
 				T instance = (T) BeanUtils.instantiateClass(constructor, args);
 				instances.add(instance);
 			}
@@ -1067,6 +1108,7 @@ public class SpringApplication {
 	 * @param args the application arguments (usually passed from a Java main method)
 	 * @return the running {@link ApplicationContext}
 	 */
+	//20190927参看文档：https://www.jianshu.com/p/f5fe55f36f9a
 	public static ConfigurableApplicationContext run(Object source, String... args) {
 		return run(new Object[] { source }, args);
 	}
