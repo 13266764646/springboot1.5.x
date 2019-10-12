@@ -247,6 +247,11 @@ public class SpringApplication {
 		if (sources != null && sources.length > 0) {
 			this.sources.addAll(Arrays.asList(sources));
 		}
+		//根据classpath里面是否存在某个特征类（org.springframework.web.context.ConfigurableWebAppliationContext）来决定
+		//是否应该创建一个为Web应用使用的ApplicationContext类型。
+		//使用SpringFactoriesLoader在应用的classpath中查找并加载所有可用的ApplicationContextInitializer.
+		//使用SpringFactoriesLoader在应用的classpath中查找并加载所有可用的ApplicationListener。
+		//推断并设置main方法的定义类。
 		//设置servlet环境
 		this.webEnvironment = deduceWebEnvironment();
 		//获取ApplicaitonContextInitializer，也是在这里开始首次加载spring.factories文件
@@ -322,7 +327,7 @@ public class SpringApplication {
 			//第五步： 准备容器
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
 			//第六步：刷新容器
-			refreshContext(context);
+			refreshContext(context);//核心点：会打印springboot的启动标志，直到server.port端口启动
 			//第七步：刷新容器后的扩展接口
 			afterRefresh(context, applicationArguments);
 			listeners.finished(context, null);
@@ -338,6 +343,7 @@ public class SpringApplication {
 		}
 	}
 
+	//创建并配置当前Spring Boot应用将要使用的Environment（包括诶之要使用的PropertySource以及Profile）
 	private ConfigurableEnvironment prepareEnvironment(SpringApplicationRunListeners listeners,
 			ApplicationArguments applicationArguments) {
 		// Create and configure the environment
@@ -388,6 +394,7 @@ public class SpringApplication {
 		listeners.contextLoaded(context);
 	}
 
+	//调用ApplicationContext的refresh（）方法，完成IOC容器可用的最后一道工序。
 	private void refreshContext(ConfigurableApplicationContext context) {
 		refresh(context);
 		if (this.registerShutdownHook) {
@@ -516,6 +523,7 @@ public class SpringApplication {
 		environment.setActiveProfiles(profiles.toArray(new String[profiles.size()]));
 	}
 
+	//如果SpringApplicaiton的showBanner属性被设置为true，则打印banner.
 	private Banner printBanner(ConfigurableEnvironment environment) {
 		if (this.bannerMode == Banner.Mode.OFF) {
 			return null;
@@ -578,6 +586,9 @@ public class SpringApplication {
 	 * @see ConfigurableApplicationContext#refresh()
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
+	//ApplicationContext创建好之后，SpringApplication会再次借助Spring-FactoriesLoader，查找并加载classpath中所有可用的
+	//ApplicationContext-Initializer,然后遍历调用这些ApplicationContextInitializer（applicationContext）方法来对已经创建
+	//好的ApplicationContext进行进一步的处理。
 	protected void applyInitializers(ConfigurableApplicationContext context) {
 		for (ApplicationContextInitializer initializer : getInitializers()) {
 			Class<?> requiredType = GenericTypeResolver.resolveTypeArgument(initializer.getClass(),

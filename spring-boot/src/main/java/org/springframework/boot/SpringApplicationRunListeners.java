@@ -49,7 +49,7 @@ class SpringApplicationRunListeners {
 		}
 	}
 
-	//environment准备完毕事件监听
+	//environment准备完毕事件监听，告诉他们“当前springboot应用使用的Environment准备好了”
 	public void environmentPrepared(ConfigurableEnvironment environment) {
 		for (SpringApplicationRunListener listener : this.listeners) {
 			listener.environmentPrepared(environment);

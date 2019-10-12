@@ -43,12 +43,12 @@ import org.springframework.core.annotation.AliasFor;
  * @author Stephane Nicoll
  * @since 1.2.0
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Inherited
-@SpringBootConfiguration//允许在使用该注解的地方使用@Bean注入
-@EnableAutoConfiguration//允许自动配置
+@Target(ElementType.TYPE) //注解的使用范围，其中type用于描述类、接口（包括包注解类型）或enum申明
+@Retention(RetentionPolicy.RUNTIME)//注解的生命周期，保留到class文件中（三个生命周期）
+@Documented//表明这个注解应该被javadoc记录
+@Inherited//子类可以继承该注解
+@SpringBootConfiguration//继承了configuration，表示当前是注解类允许在使用该注解的地方使用@Bean注入
+@EnableAutoConfiguration//开启springboot的注解功能，springboot的四大神器之一，其借助@import的帮助    允许自动配置
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
 		@Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class) })
 //指定要扫描的那些类。springBoot默认会扫描Application类所在包及子包的类的就是因为这个。

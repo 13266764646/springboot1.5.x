@@ -93,6 +93,7 @@ public final class FailureAnalyzers {
 		}
 	}
 
+	//最核心的一步，将之前通过@EnableAutoConfiguration获取的所有配置以及其他形式的IOC容器配置加载到已经准备完毕的ApplicationContext
 	private void prepareAnalyzer(ConfigurableApplicationContext context, FailureAnalyzer analyzer) {
 		if (analyzer instanceof BeanFactoryAware) {
 			((BeanFactoryAware) analyzer).setBeanFactory(context.getBeanFactory());

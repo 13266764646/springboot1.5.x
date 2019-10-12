@@ -81,6 +81,7 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 
 	private ResourceLoader resourceLoader;
 
+	//重要功能
 	@Override
 	public String[] selectImports(AnnotationMetadata annotationMetadata) {
 		if (!isEnabled(annotationMetadata)) {
@@ -90,7 +91,7 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 			AutoConfigurationMetadata autoConfigurationMetadata = AutoConfigurationMetadataLoader
 					.loadMetadata(this.beanClassLoader);
 			AnnotationAttributes attributes = getAttributes(annotationMetadata);
-			List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes);
+			List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes);//它其实是去加载META-INF/spring.factories;这个外部文件。
 			configurations = removeDuplicates(configurations);
 			configurations = sort(configurations, autoConfigurationMetadata);
 			Set<String> exclusions = getExclusions(annotationMetadata, attributes);

@@ -123,7 +123,7 @@ public abstract class AutoConfigurationPackages {
 
 		@Override
 		public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
-			register(registry, new PackageImport(metadata).getPackageName());
+			register(registry, new PackageImport(metadata).getPackageName());//它其实返回了当前主程序类的同级以及子级的包组件
 		}
 
 		@Override
